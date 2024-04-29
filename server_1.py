@@ -132,6 +132,7 @@ def werewolf_votes(werewolf_conns,townspeople):
         comm.send("close",dest=0)
         del conns[target]
         townspeople.remove(target)
+        del townspeople_conns[target]
         print(f"Player {target} unanimously voted out and will be removed.")
         sys.stdout.flush()
         wolfkill = 1
@@ -139,6 +140,59 @@ def werewolf_votes(werewolf_conns,townspeople):
     else:
         print("No unanimous vote.")
         sys.stdout.flush()
+
+def collect_votes(player_conns, voting_time):
+    """
+    Collects votes from all players during the day phase to identify a suspected werewolf.
+
+    Parameters:
+    - player_conns (dict): Dictionary mapping player indices to their MPI intercommunicator objects.
+    - voting_time (float): The duration in seconds that voting is allowed to last.
+    """
+    start_time = time.time()
+    votes = {}
+    all = player_conns.keys()
+
+    # Collect votes from all players
+    while time.time() - start_time < voting_time:
+        for idx, conn in player_conns.items():
+            if conn.Iprobe(source=0, tag=102):
+                vote = conn.recv(source=0, tag=102)
+                if int(vote) in all:
+                    if idx not in votes:  # Ensure each player votes only once
+                        votes[idx] = vote
+                        print(f"Player {idx} voted for Player {vote}")
+                        sys.stdout.flush()
+                else:
+                    print(f"Invalid vote from Player {idx} for Player {vote}")
+                    sys.stdout.flush()
+
+    # Evaluate votes to determine if any player has been voted out
+    if votes:
+        vote_list = list(votes.values())
+        voted_player = max(set(vote_list), key=vote_list.count)
+        target = int(voted_player)
+        vote_count = vote_list.count(voted_player)
+        if vote_count > len(players) // 2:  # Simple majority rule
+            comm = conns[target]
+            comm.send(f"You have been voted out by the villagers.  You will be removed from the game.", dest=0)
+            comm.send("close",dest=0)
+            del conns[target]
+            if target in wolves:
+                wolves.remove(target)
+                del werewolf_conns[target]
+            elif target in townspeople:
+                townspeople.remove(target)
+                del townspeople_conns[target]
+            elif target in witch:
+                witch.remove(target)
+                del witch_conns[target]
+            print(f"Player {target} has been voted out by the villegers.")
+        else:
+            print("No player has been voted out.")
+
+    for _, conn in conns.items():
+        conn.send("voting over", dest=0, tag=102)  # Notify all players that voting is over
 
 def day_discussion(all_conns):
     global towntalktime
@@ -208,12 +262,13 @@ def standardTurn():
     sys.stdout.flush()
     day_discussion(conns)
     send_all(f'Townspeople, you have {townvotetime} seconds to cast your votes on who to hang. Valid votes are {conns.keys()}')
+    collect_votes(conns,30)
     #******************END TOWN*******************
 
 if rank == 0:
     port_name = MPI.Open_port()
-    print(f"Server listening on port: {port_name}")
-    sys.stdout.flush()
+    #print(f"Server listening on port: {port_name}")
+    #sys.stdout.flush()
 
     with open('port_name.txt', 'w') as file:
         file.write(port_name)
@@ -264,13 +319,16 @@ if rank == 0:
     send_all(message)
     
     comm.barrier()
-
-    # Night phase
-    print("Night phase starting.")
-    #targets = collect_night_actions()
-    print("Night actions received:")
-    sys.stdout.flush()
-    standardTurn()
+    round = 1
+    while len(wolves) != 0 and len(wolves) < len(conns):
+        send_all(round)
+        # Night phase
+        print("Night phase starting.")
+        #targets = collect_night_actions()
+        print("Night actions received:")
+        sys.stdout.flush()
+        standardTurn()
+        round += 1
 
     if len(wolves) == 0: 
         winner = 'Townspeople win'
