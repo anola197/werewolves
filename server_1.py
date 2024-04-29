@@ -3,6 +3,24 @@ import time
 import sys
 import random
 
+i = {}
+inputVars = open('config', 'r').read().split('\n')
+for var in inputVars:
+    var = var.strip('\n').split('=')
+    key = var[0]
+    try:#if a line doesn't have an = sign
+        value = var[1]
+    except:
+        continue
+    i[key] = value
+
+#time parameters
+timeTillStart = int(i['timeTillStart'])
+wolftalktime = int(i['wolfTalkTime'])
+wolfvotetime = int(i['wolfVoteTime'])
+townvotetime = int(i['townVoteTime'])
+towntalktime = int(i['townTalkTime'])
+
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 conns = {}
@@ -12,25 +30,21 @@ witch =[]
 townspeople = []
 werewolf_conns = {}
 townspeople_conns = {}
-witch_conns= {}
-wolftalktime = 60
-wolfvotetime = 15
+#witch_conns= {}
 wolfkill = 0
 wolfvote = -1
-towntalktime = 60
-townvotetime = 30
 
 #Assign roles to players
 
-def assign_roles(size, numWolves, numWitches):
+def assign_roles(size, numWolves):
     numPlayers = size
     roles = ['townsperson'] * numPlayers
-    if numWolves + numWitches <= numPlayers:
-        random_indices = random.sample(range(numPlayers), numWolves + numWitches)
+    if numWolves <= numPlayers:
+        random_indices = random.sample(range(numPlayers), numWolves)
         for i in random_indices[:numWolves]:
             roles[i] = 'werewolf'
-        for i in random_indices[numWolves:numWolves + numWitches]:
-            roles[i] = 'witch'
+        #for i in random_indices[numWolves:numWolves + numWitches]:
+        #    roles[i] = 'witch'
     return roles
 
 def send_all(message):
@@ -42,10 +56,10 @@ def broadcasts(message,client):
         comm.isend(message, dest=0)
 
 def create_communicators(conns):
-    global werewolf_conns, townspeople_conns, witch_conns
+    global werewolf_conns, townspeople_conns
     werewolf_conns = {idx: comm for idx, comm in conns.items() if idx in wolves}
     townspeople_conns = {idx: comm for idx, comm in conns.items() if idx in townspeople}
-    witch_conns = {idx: comm for idx, comm in conns.items() if idx in witch}
+    #witch_conns = {idx: comm for idx, comm in conns.items() if idx in witch}
 
 def is_unanimous(votes, werewolf_conns):
     """Check if all voting werewolves voted for the same townspeople."""
@@ -188,8 +202,10 @@ def collect_votes(player_conns, voting_time):
                 witch.remove(target)
                 del witch_conns[target]
             print(f"Player {target} has been voted out by the villegers.")
+            sys.stdout.flush()
         else:
             print("No player has been voted out.")
+            sys.stdout.flush()
 
     for _, conn in conns.items():
         conn.send("voting over", dest=0, tag=102)  # Notify all players that voting is over
@@ -239,15 +255,13 @@ def standardTurn():
     send_all(message)
     #**************WEREWOLVES************************
     if len(wolves) < 2: wolftalktime = 0
-    message = "Werewolves, open your eyes."
-    broadcasts(message,werewolf_conns)
-    message = f'Werewolves, {wolves}, you must choose a victim.  You have {wolftalktime} seconds to discuss.  Possible victims are {townspeople}'
-    broadcasts(message,werewolf_conns)
+    broadcasts("Werewolves, open your eyes.",townspeople_conns)
+    broadcasts(f'Werewolves, {wolves}, you must choose a victim.  You have {wolftalktime} seconds to discuss.  Possible victims are {townspeople}',werewolf_conns)
     werewolf_discussion(werewolf_conns)
-    message = f'Werewolves, you must vote on a victim to eat.  You have {wolfvotetime} seconds to vote.  Valid votes are {townspeople}.'
-    broadcasts(message,werewolf_conns)
+    broadcasts('Werewolves, vote.',townspeople_conns)
+    broadcasts(f'Werewolves, you must vote on a victim to eat.  You have {wolfvotetime} seconds to vote.  Valid votes are {townspeople}.',werewolf_conns)
     werewolf_votes(werewolf_conns,townspeople)
-    broadcasts('Werewolves, go to sleep.',werewolf_conns)
+    broadcasts('Werewolves, go to sleep.',townspeople_conns)
     #**********END WEREWOLVES************************
 
     #**************START TOWN***********************
@@ -294,39 +308,35 @@ if rank == 0:
     print("No longer accepting connections.")
     sys.stdout.flush()
 
-    comm.barrier() # Wait for all players to connect to the game
-
-    roles = assign_roles(connections, 2, 1)
+    roles = assign_roles(connections, 2)
     # Send roles to each player
     for i,client_comm in conns.items():
-        client_comm.send(roles[i], dest=0)
+        client_comm.send(f'~~~~~ YOU ARE A {roles[i]} ~~~~~', dest=0)
     print("roles assigned")
     sys.stdout.flush()
 
     players = list(range(connections))
     wolves = [players[i] for i, role in enumerate(roles) if role == 'werewolf']
     townspeople = [players[i] for i, role in enumerate(roles) if role == 'townsperson']
-    witch = [players[i] for i, role in enumerate(roles) if role == 'witch']
-    print(f'wolves: {wolves}')
-    print(f'townspeople: {townspeople}')
-    print(f'witch: {witch}')
+    #witch = [players[i] for i, role in enumerate(roles) if role == 'witch']
 
-    create_communicators(conns)
-    print("Communicators created")
+    create_communicators(conns) # communicators for each group
+
+    print('Begin')
     sys.stdout.flush()
-
-    message = 'There are ' + str(len(wolves)) + ' wolves, and ' + str(len(conns) - len(wolves)) + ' townspeople.'
-    send_all(message)
+    send_all('There are ' + str(len(wolves)) + ' wolves, and ' + str(len(conns) - len(wolves)) + ' townspeople.')
     
-    comm.barrier()
     round = 1
     while len(wolves) != 0 and len(wolves) < len(conns):
-        send_all(round)
-        # Night phase
-        print("Night phase starting.")
-        #targets = collect_night_actions()
-        print("Night actions received:")
+        send_all('*' * 50)
+        send_all('*' * 21 + 'ROUND ' + str(round) + '*' * 22)
+        send_all('*' * 15 + str(len(conns)) + ' players remain.' + '*' * 18)
+        send_all('*' * 50)
+        print('Round ' + str(round))
+        print(f'wolves: {wolves}')
+        print(f'townspeople: {townspeople}')
         sys.stdout.flush()
+        #print(f'witch: {witch}')
         standardTurn()
         round += 1
 

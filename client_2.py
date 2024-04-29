@@ -42,7 +42,7 @@ def main():
     try:
         while running:
             message = server_comm.recv(source=0)
-            print(f"Received from server: {message}")
+            print(f"{message}")
             sys.stdout.flush()
 
             if message == "discussion over":
