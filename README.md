@@ -20,19 +20,17 @@ This project implements a multiplayer werewolf game using MPI (Message Passing I
 
 1. **Install MPI**:
    - For Ubuntu: `sudo apt install mpich`
-   - For macOS: `brew install mpich`
 
 2. **Install mpi4py**:
    - Ensure pip is updated: `pip install --upgrade pip`
    - Install mpi4py: `pip install mpi4py`
 
-3. **Clone the Repository**:
-   - `git clone https://yourrepositoryurl.com`
-   - Navigate into the project directory: `cd werewolf_game_mpi`
+3. **Use the tar ball**:
+   - You can use the tar ball provided to download the game to run on your system
 
 ## Running the Game
 
 1. To start the game server:
-   - mpiexec -n 1 python3 server.py
+   - `mpiexec -n 1 python3 server.py`
 2. To start the client:
-   - mpiexec -n 1 python3 client.py
+   - `mpiexec -n 1 python3 client.py`
