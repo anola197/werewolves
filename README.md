@@ -8,7 +8,7 @@ This project implements a multiplayer werewolf game using MPI (Message Passing I
 - **Night Phase**: During the night, werewolves secretly choose a townspeople to eliminate.
 - **Day Phase**: During the day, all players participate in a discussion and vote on who they suspect is a werewolf.
 - **Voting System**: Implements a voting mechanism where players can vote for who they suspect and, based on majority, potentially eliminate that player from the game.
-- **Dynamic Discussion**: All Players can discuss during the day phase and werewolves can discuss durint the night phase through a chat system facilitated by MPI.
+- **Dynamic Discussion**: All Players can discuss during the day phase and werewolves can discuss during the night phase through a chat system facilitated by MPI.
 
 ## Requirements
 
