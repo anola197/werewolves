@@ -23,8 +23,8 @@ This project implements a multiplayer werewolf game using MPI (Message Passing I
    - For macOS: `brew install mpich`
 
 2. **Install mpi4py**:
-   - Ensure pip is updated: `pip install --upgrade pip`
-   - Install mpi4py: `pip install mpi4py`
+   - Ensure pip is updated: `pip3 install --upgrade pip`
+   - Install mpi4py: `pip3 install mpi4py`
 
 3. **Clone the Repository**:
    - `git clone https://yourrepositoryurl.com`
