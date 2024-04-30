@@ -1,4 +1,4 @@
-# Werewolf Game with MPI
+# Werewolves Game using MPI
 
 This project implements a multiplayer werewolf game using MPI (Message Passing Interface), allowing players to participate in a virtual version of the popular social deduction game. The game supports multiple players, each taking on roles as either townspeople or werewolves, with the main objective of the townspeople being to eliminate the werewolves and the werewolves aiming to eliminate the townspeople.
 
@@ -32,7 +32,7 @@ This project implements a multiplayer werewolf game using MPI (Message Passing I
 
 ## Running the Game
 
-To start the game server:
-  mpiexec -n 1 python3 server.py
-To start the client:
-  mpiexec -n 1 python3 client.py
+1. To start the game server:
+   - mpiexec -n 1 python3 server.py
+2. To start the client:
+   - mpiexec -n 1 python3 client.py
