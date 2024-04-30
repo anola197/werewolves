@@ -1,0 +1,15 @@
+#Game configurations
+
+#duration (in seconds) for the corresponding phase of the game
+timeTillStart=60
+wolfTalkTime=60
+wolfVoteTime=60
+townTalkTime=180
+townVoteTime=45
+connectiontimeout=30
+
+#number of wolves
+numWolves=2
+
+
+
