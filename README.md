@@ -24,13 +24,15 @@ This project implements a multiplayer werewolf game using MPI (Message Passing I
 2. **Install mpi4py**:
    - Ensure pip is updated: `pip install --upgrade pip`
    - Install mpi4py: `pip install mpi4py`
-
-3. **Use the tar ball**:
-   - You can use the tar ball provided to download the game to run on your system
+   - You can create virtual env as well to install mpi4py python library.
+      - `python3 -m venv venv`
+      - `pip3 install mpi4py`
+      - `source venv/bin/activate` 
 
 ## Running the Game
-
-1. To start the game server:
+1. Unpack the werewolves_mpi.tgz file.
+2. Ensure you have the necessary environment set up as per the documentation
+3. To start the game server:
    - `mpiexec -n 1 python3 server.py`
-2. To start the client:
+4. To start the client:
    - `mpiexec -n 1 python3 client.py`
