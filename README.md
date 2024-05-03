@@ -26,10 +26,6 @@ This project implements a multiplayer werewolf game using MPI (Message Passing I
    - Ensure pip is updated: `pip3 install --upgrade pip`
    - Install mpi4py: `pip3 install mpi4py`
 
-3. **Clone the Repository**:
-   - `git clone https://yourrepositoryurl.com`
-   - Navigate into the project directory: `cd werewolf_game_mpi`
-
 ## Running the Game
 
 1. To start the game server:
