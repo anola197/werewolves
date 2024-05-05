@@ -42,7 +42,7 @@ This project implements a multiplayer werewolf game using MPI (Message Passing I
 
 ## Game Implementation using MPI
    - Server is using MPI_Open_port to allow clients to connect during the allocated time
-   - Client is using MPI_Comm_connect to connect to the server using the port. (As MPI_Comm_Accept is blocking call last player connection to be sent after the timeout or else it will be stuck on Accept)
+   - Client is using MPI_Comm_connect to connect to the server using the port. 
    - Point to point communication is used to send messages between the server and the client as we are initiating seperate client process for each player
 
 ## Future Scope
