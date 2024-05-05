@@ -1,9 +1,3 @@
-# Group 7
-   - Aayushi
-   - Raj Subhash Mendon
-   - Riya Mendon
-   - Venkata Appala Sai Maddi
-
 # Werewolves Game using MPI
 
 This project implements a multiplayer werewolf game using MPI (Message Passing Interface), allowing players to participate in a virtual version of the popular social deduction game. The game supports multiple players, each taking on roles as either townspeople or werewolves, with the main objective of the townspeople being to eliminate the werewolves and the werewolves aiming to eliminate the townspeople.
